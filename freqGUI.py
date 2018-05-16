@@ -3,8 +3,8 @@ PyQt4 GUI program for Agilent E8257D Synthesizer
 Send command to turn RF on/off, and change frequency
 Created on Nov. 7, 2016
 
-FIX: output goes on automatically at startup
-    Slider scale is not 1 per scroll
+v1.0: Reads frequency and output state, changable by user via mouse scroll on slider, or text+enter
+v1.1: Update slider size for easier use
 @author: Daryl Spencer
 """
 
@@ -16,7 +16,7 @@ from PyQt4.QtGui import *
 
 
 
-__version__ = '1.0'
+__version__ = '1.1'
 
 class color_QLineEdit(QLineEdit):
 
@@ -65,6 +65,8 @@ class FreqSynth(QMainWindow):
         self.slider.setTickInterval(1)
         self.slider.setSingleStep(1)
         self.slider.setToolTip("Scroll or Use Arrows (fine)")
+        self.slider.setSizePolicy(QSizePolicy.Preferred,QSizePolicy.Expanding)
+#        print('%s' %self.slider.sizePolicy())
 #        self.slider.resize(10,20)
         self.sliderres = QComboBox(self)
         for i in np.logspace(0,10,11):
