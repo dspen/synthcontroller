@@ -5,6 +5,7 @@ Created on Nov. 7, 2016
 
 v1.0: Reads frequency and output state, changable by user via mouse scroll on slider, or text+enter
 v1.1: Update slider size for easier use
+v1.2: Resize GPIB inst. selector
 @author: Daryl Spencer
 """
 
@@ -16,7 +17,7 @@ from PyQt4.QtGui import *
 
 
 
-__version__ = '1.1'
+__version__ = '1.2'
 
 class color_QLineEdit(QLineEdit):
 
@@ -77,6 +78,7 @@ class FreqSynth(QMainWindow):
         
         self.gpibInst = QComboBox(self)
         self.gpibInst.setMaximumWidth(100)
+        self.gpibInst.setMinimumWidth(300)
         self.gpibInst.addItem('Select GPIB Instrument')
         self.gpibInst.addItems(self.gpibFind())
         self.inst = 'None'
@@ -168,7 +170,8 @@ class FreqSynth(QMainWindow):
     def gpibConnect(self,address):    
         rm = visa.ResourceManager()
         self.inst = rm.open_resource(address)
-        print(self.inst.query('*IDN?'))
+        self.instname = self.inst.query('*IDN?')
+        print(self.instname)
 #        if self.rstbox.checkState() ==2:
 #            self.inst.write('*RST; *WAI') #reset instrument
 #            self.inst.write('*CLS; *WAI') #clear instrument
@@ -189,7 +192,7 @@ class FreqSynth(QMainWindow):
 def main():
     app = QtGui.QApplication(sys.argv)
     form = FreqSynth()
-    form.setWindowTitle("E8257D Freq. Controller")
+    form.setWindowTitle("Agilent Freq. Controller")
     form.resize(365,190)
     form.show()
     sys.exit(app.exec_())
