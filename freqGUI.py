@@ -6,11 +6,13 @@ Created on Nov. 7, 2016
 v1.0: Reads frequency and output state, changable by user via mouse scroll on slider, or text+enter
 v1.1: Update slider size for easier use
 v1.2: Resize GPIB inst. selector
+v1.3: Resize widgets
+v1.4: Add label at top for multiple inst. connections
 @author: Daryl Spencer
 """
 
 from PyQt4 import QtGui, QtCore, Qt
-import sys, visa
+import sys
 import numpy as np
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -18,7 +20,7 @@ import pyvisa as visa
 
 
 
-__version__ = '1.3'
+__version__ = '1.4'
 
 class color_QLineEdit(QLineEdit):
 
@@ -54,7 +56,7 @@ class FreqSynth(QMainWindow):
         
     def initUI(self):      
         self.main_frame =QWidget()
-        
+        self.name = QLabel("")
         self.freqbox = color_QLineEdit("")
         self.output = QCheckBox()
         self.output.setText("Output On/Off")
@@ -105,6 +107,7 @@ class FreqSynth(QMainWindow):
             hbox3.addWidget(w)
             hbox3.setAlignment(w, Qt.AlignVCenter)  
         vbox = QVBoxLayout()
+        vbox.addWidget(self.name)
         vbox.addLayout(hbox)
         vbox.addWidget(self.freqbox)
         vbox.addLayout(hbox2)
@@ -174,6 +177,7 @@ class FreqSynth(QMainWindow):
         self.inst = rm.open_resource(str(address))
         self.instname = self.inst.query('*IDN?')
         print(self.instname)
+        self.name.setText("%s" %self.instname)
 #        if self.rstbox.checkState() ==2:
 #            self.inst.write('*RST; *WAI') #reset instrument
 #            self.inst.write('*CLS; *WAI') #clear instrument
