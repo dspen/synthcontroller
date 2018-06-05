@@ -14,10 +14,11 @@ import sys, visa
 import numpy as np
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
+import pyvisa as visa
 
 
 
-__version__ = '1.2'
+__version__ = '1.3'
 
 class color_QLineEdit(QLineEdit):
 
@@ -169,7 +170,8 @@ class FreqSynth(QMainWindow):
         
     def gpibConnect(self,address):    
         rm = visa.ResourceManager()
-        self.inst = rm.open_resource(address)
+        print(address);print(str(address))
+        self.inst = rm.open_resource(str(address))
         self.instname = self.inst.query('*IDN?')
         print(self.instname)
 #        if self.rstbox.checkState() ==2:
