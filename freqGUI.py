@@ -8,6 +8,7 @@ v1.1: Update slider size for easier use
 v1.2: Resize GPIB inst. selector
 v1.3: Resize widgets
 v1.4: Add label at top for multiple inst. connections
+v1.5: Add power control
 @author: Daryl Spencer
 """
 
@@ -20,7 +21,7 @@ import pyvisa as visa
 
 
 
-__version__ = '1.4'
+__version__ = '1.5'
 
 class color_QLineEdit(QLineEdit):
 
@@ -58,11 +59,16 @@ class FreqSynth(QMainWindow):
         self.main_frame =QWidget()
         self.name = QLabel("")
         self.freqbox = color_QLineEdit("")
+        self.freqbox.setSizePolicy(QSizePolicy.Preferred,QSizePolicy.Minimum)
+        self.pwrbox = color_QLineEdit("")
+        self.pwrbox.setSizePolicy(QSizePolicy.Preferred,QSizePolicy.Minimum)
         self.output = QCheckBox()
         self.output.setText("Output On/Off")
 #        self.outputlbl = QLabel("Output On/Off", self)
         self.freqlbl = QLabel("Actual Frequency: ")
         self.freqtext = QLabel("")
+        self.pwrlbl = QLabel("Actual Power: ")
+        self.pwrtext = QLabel("")
         self.slider = QSlider()
         self.slider.setMinimum(-10)
         self.slider.setMaximum(10)
@@ -80,7 +86,7 @@ class FreqSynth(QMainWindow):
         
         
         self.gpibInst = QComboBox(self)
-        self.gpibInst.setMaximumWidth(100)
+        self.gpibInst.setMaximumWidth(400)
         self.gpibInst.setMinimumWidth(300)
         self.gpibInst.addItem('Select GPIB Instrument')
         self.gpibInst.addItems(self.gpibFind())
@@ -88,6 +94,7 @@ class FreqSynth(QMainWindow):
         
         ## Signal/Slot connections
         self.freqbox.returnPressed.connect(self.freqChanged) #Send new freq. to instr.
+        self.pwrbox.returnPressed.connect(self.pwrChanged) #Send new pwr. to instr.
         self.connect(self.gpibInst, SIGNAL('currentIndexChanged(QString)'),self.gpibConnect)
         self.connect(self.output, SIGNAL('stateChanged(int)'),self.outputChanged)
         self.slider.valueChanged.connect(self.sliderChanged) #Add slider value*resolution to current frequency
@@ -95,7 +102,7 @@ class FreqSynth(QMainWindow):
 
         ## Layout widgets on screen
         hbox = QHBoxLayout()
-        for w in [self.freqlbl, self.freqtext, self.output]:
+        for w in [self.freqlbl, self.freqtext, self.output, self.pwrlbl, self.pwrtext]:
             hbox.addWidget(w)
             hbox.setAlignment(w, Qt.AlignVCenter)
         hbox2 = QHBoxLayout()
@@ -103,15 +110,21 @@ class FreqSynth(QMainWindow):
             hbox2.addWidget(w)
             hbox2.setAlignment(w, Qt.AlignVCenter)  
         hbox3 = QHBoxLayout()
-        for w in [self.gpibInst]:
+        for w in [self.freqbox, self.pwrbox]:
             hbox3.addWidget(w)
-            hbox3.setAlignment(w, Qt.AlignVCenter)  
+            hbox3.setAlignment(w, Qt.AlignVCenter)
+#        hbox4 = QHBoxLayout()
+#        #for w in [self.gpibInst]:
+#        hbox4.addWidget(self.gpibInst)
+#        hbox4.setAlignment(w, Qt.AlignVCenter)  
         vbox = QVBoxLayout()
         vbox.addWidget(self.name)
         vbox.addLayout(hbox)
-        vbox.addWidget(self.freqbox)
         vbox.addLayout(hbox2)
+        #vbox.addWidget(self.freqbox)
         vbox.addLayout(hbox3)
+        vbox.addWidget(self.gpibInst)
+        vbox.setAlignment(self.gpibInst, Qt.AlignCenter)
         
         self.main_frame.setLayout(vbox)
         self.setCentralWidget(self.main_frame)  
@@ -141,6 +154,16 @@ class FreqSynth(QMainWindow):
         print('freq read')
         self.freq=self.func_read(':FREQ:FIXED?',ascii=1)[0]
         self.freqtext.setText("%s Hz" %self.freq)
+
+    def pwrChanged(self):
+        self.func_write(':POW %s; *WAI' %self.pwrbox.text()); 
+        print('Fixed pwr: %s' %self.pwrbox.text())
+        self.pwrRead()
+        
+    def pwrRead(self):
+        print('pwr read')
+        self.pwr=self.func_read(':POW?',ascii=1)[0]
+        self.pwrtext.setText("%s dBm" %self.pwr)
         
     def outputRead(self):
         print('output read')
@@ -185,6 +208,8 @@ class FreqSynth(QMainWindow):
         self.inst.chunck_size = pow(2,20)
         self.freqRead()
         self.freqbox.setText("%s" %self.freq)
+        self.pwrRead()
+        self.pwrbox.setText("%s" %self.pwr)
         self.output.blockSignals(True)
         self.outputRead()
         self.output.blockSignals(False)
